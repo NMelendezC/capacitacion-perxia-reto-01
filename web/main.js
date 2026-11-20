@@ -1,0 +1,10 @@
+const sessionId = crypto.randomUUID();
+const form = document.querySelector("#chat-form");
+const input = document.querySelector("#message");
+const conversation = document.querySelector("#conversation");
+const loading = document.querySelector("#loading");
+const error = document.querySelector("#error");
+const confirmation = document.querySelector("#confirmation");
+function message(role, text) { const article = document.createElement("article"); article.className = `message ${role}`; article.textContent = text; conversation.append(article); conversation.scrollTop = conversation.scrollHeight; }
+function tools(items) { for (const item of items) { const details = document.createElement("details"); details.className = "tool-card"; details.dataset.testid = "tool-call-card"; const summary = document.createElement("summary"); summary.textContent = `${item.ok ? "✓" : "×"} ${item.name} — ${item.summary}`; const pre = document.createElement("pre"); pre.textContent = JSON.stringify(item.arguments, null, 2); details.append(summary, pre); conversation.append(details); } }
+form.addEventListener("submit", async (event) => { event.preventDefault(); const value = input.value.trim(); if (!value) return; message("user", value); input.value = ""; input.disabled = true; form.querySelector("button").disabled = true; loading.hidden = false; error.hidden = true; try { const response = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sessionId, message: value }) }); const payload = await response.json(); if (!response.ok || "error" in payload) throw new Error("error" in payload ? payload.error : "No fue posible procesar el mensaje"); message("assistant", payload.reply); tools(payload.toolCalls); confirmation.hidden = !payload.needsConfirmation; } catch (cause) { error.textContent = cause instanceof Error ? cause.message : "No fue posible conectar con el agente"; error.hidden = false; } finally { input.disabled = false; form.querySelector("button").disabled = false; loading.hidden = true; input.focus(); } });

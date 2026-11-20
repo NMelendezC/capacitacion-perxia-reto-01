@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro como Proveedor</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header><p class="eyebrow">PERIFERIA IT GROUP</p><h1>Registro como proveedor</h1><p>Procesa solicitudes y prepara el paquete para revisión humana.</p></header>
+    <section id="conversation" class="conversation" aria-live="polite"></section>
+    <section id="confirmation" class="confirmation" hidden data-testid="chat-confirmation-banner">Hay un envío simulado pendiente. Escribe <strong>enviar</strong> para confirmarlo.</section>
+    <p id="error" class="error" role="alert" hidden></p>
+    <form id="chat-form" class="composer">
+      <label for="message">Mensaje</label>
+      <textarea id="message" data-testid="chat-message-input" placeholder="Procesa el caso &quot;ec-corp-andina&quot;" required></textarea>
+      <div class="composer-actions"><span id="loading" hidden data-testid="chat-processing-indicator">Procesando...</span><button data-testid="chat-send-button" type="submit">Enviar</button></div>
+    </form>
+  </main>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>

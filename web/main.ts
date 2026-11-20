@@ -1,0 +1,12 @@
+type ToolCall = { name: string; arguments: Record<string, unknown>; ok: boolean; summary: string };
+type ChatResponse = { reply: string; toolCalls: ToolCall[]; needsConfirmation: boolean };
+const sessionId = crypto.randomUUID();
+const form = document.querySelector<HTMLFormElement>("#chat-form")!;
+const input = document.querySelector<HTMLTextAreaElement>("#message")!;
+const conversation = document.querySelector<HTMLElement>("#conversation")!;
+const loading = document.querySelector<HTMLElement>("#loading")!;
+const error = document.querySelector<HTMLElement>("#error")!;
+const confirmation = document.querySelector<HTMLElement>("#confirmation")!;
+function message(role: string, text: string): void { const article = document.createElement("article"); article.className = `message ${role}`; article.textContent = text; conversation.append(article); conversation.scrollTop = conversation.scrollHeight; }
+function tools(items: ToolCall[]): void { for (const item of items) { const details = document.createElement("details"); details.className = "tool-card"; details.dataset.testid = "tool-call-card"; const summary = document.createElement("summary"); summary.textContent = `${item.ok ? "✓" : "×"} ${item.name} — ${item.summary}`; const pre = document.createElement("pre"); pre.textContent = JSON.stringify(item.arguments, null, 2); details.append(summary, pre); conversation.append(details); } }
+form.addEventListener("submit", async (event) => { event.preventDefault(); const value = input.value.trim(); if (!value) return; message("user", value); input.value = ""; input.disabled = true; form.querySelector("button")!.disabled = true; loading.hidden = false; error.hidden = true; try { const response = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sessionId, message: value }) }); const payload = await response.json() as ChatResponse | { error: string }; if (!response.ok || "error" in payload) throw new Error("error" in payload ? payload.error : "No fue posible procesar el mensaje"); message("assistant", payload.reply); tools(payload.toolCalls); confirmation.hidden = !payload.needsConfirmation; } catch (cause) { error.textContent = cause instanceof Error ? cause.message : "No fue posible conectar con el agente"; error.hidden = false; } finally { input.disabled = false; form.querySelector("button")!.disabled = false; loading.hidden = true; input.focus(); } });
